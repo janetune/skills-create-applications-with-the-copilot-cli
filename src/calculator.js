@@ -1,6 +1,7 @@
 const readline = require('node:readline');
 
-// Supported operations: addition (+), subtraction (-), multiplication (*), and division (/).
+// Supported operations: addition (+), subtraction (-), multiplication (*), division (/),
+// modulo (%), exponentiation (**), and square root (sqrt).
 function add(left, right) {
   return left + right;
 }
@@ -21,6 +22,26 @@ function divide(left, right) {
   return left / right;
 }
 
+function modulo(a, b) {
+  if (b === 0) {
+    throw new RangeError('Cannot modulo by zero.');
+  }
+
+  return a % b;
+}
+
+function power(base, exponent) {
+  return base ** exponent;
+}
+
+function squareRoot(n) {
+  if (n < 0) {
+    throw new RangeError('Cannot take the square root of a negative number.');
+  }
+
+  return Math.sqrt(n);
+}
+
 function calculate(left, operator, right) {
   if (!Number.isFinite(left) || !Number.isFinite(right)) {
     throw new TypeError('Both operands must be finite numbers.');
@@ -31,6 +52,8 @@ function calculate(left, operator, right) {
     '-': subtract,
     '*': multiply,
     '/': divide,
+    '%': modulo,
+    '**': power,
   };
   const operation = operations[operator];
 
@@ -42,12 +65,20 @@ function calculate(left, operator, right) {
 }
 
 function evaluateExpression(expression) {
+  const squareRootMatch = expression.match(
+    /^\s*sqrt\s*\(\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s*\)\s*$/i,
+  );
+
+  if (squareRootMatch) {
+    return squareRoot(Number(squareRootMatch[1]));
+  }
+
   const match = expression.match(
-    /^\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s*([+\-*/])\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s*$/,
+    /^\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s*(\*\*|[+\-*/%])\s*(-?(?:\d+(?:\.\d*)?|\.\d+))\s*$/,
   );
 
   if (!match) {
-    throw new Error('Enter a calculation like "2 + 3".');
+    throw new Error('Enter a calculation like "2 + 3" or "sqrt(9)".');
   }
 
   return calculate(Number(match[1]), match[2], Number(match[3]));
@@ -59,7 +90,7 @@ function runCalculator() {
     output: process.stdout,
   });
 
-  console.log('CLI Calculator — enter a calculation, C to clear, or Q to quit.');
+  console.log('CLI Calculator — use +, -, *, /, %, **, or sqrt(); C to clear, Q to quit.');
   terminal.setPrompt('0 > ');
   terminal.prompt();
 
@@ -94,4 +125,15 @@ if (require.main === module) {
   runCalculator();
 }
 
-module.exports = { add, subtract, multiply, divide, calculate, evaluateExpression, runCalculator };
+module.exports = {
+  add,
+  subtract,
+  multiply,
+  divide,
+  modulo,
+  power,
+  squareRoot,
+  calculate,
+  evaluateExpression,
+  runCalculator,
+};
